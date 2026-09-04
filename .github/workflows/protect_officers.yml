@@ -1,0 +1,71 @@
+name: Protect Officers JSON
+on:
+  pull_request:
+    paths:
+      - 'officers.json'
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          path: pr_branch
+          
+      - name: Checkout Main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main_branch
+
+      - name: Validate Additions and Limits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read both files
+            const oldContent = fs.readFileSync('./main_branch/officers.json', 'utf8');
+            const newContent = fs.readFileSync('./pr_branch/officers.json', 'utf8');
+            
+            let oldJson, newJson;
+            try {
+              oldJson = JSON.parse(oldContent);
+              newJson = JSON.parse(newContent);
+            } catch (e) {
+              core.setFailed("❌ Error: Invalid JSON format. Make sure your brackets and quotes are correct.");
+              return;
+            }
+
+            if (Array.isArray(oldJson)) {
+              for (const oldItem of oldJson) {
+                const exists = newJson.some(newItem => JSON.stringify(newItem) === JSON.stringify(oldItem));
+                if (!exists) {
+                  core.setFailed(`❌ Error: You are not allowed to delete or modify existing entries.`);
+                  return;
+                }
+              }
+              // Check 30 character 
+              newJson.forEach(item => {
+                if (typeof item === 'string' && item.length > 30) {
+                  core.setFailed(`❌ Error: The name '${item}' is ${item.length} characters long. Maximum allowed is 30.`);
+                }
+              });
+            } 
+            // Check the old json
+            else {
+              for (const key in oldJson) {
+                if (JSON.stringify(oldJson[key]) !== JSON.stringify(newJson[key])) {
+                  core.setFailed(`❌ Error: You are not allowed to delete or modify the existing entry for '${key}'.`);
+                  return;
+                }
+              }
+              // 30 character limit
+              for (const key in newJson) {
+                const value = newJson[key];
+                if (typeof value === 'string' && value.length > 30) {
+                  core.setFailed(`❌ Error: The name '${value}' is ${value.length} characters long. Maximum allowed is 30.`);
+                }
+              }
+            }
