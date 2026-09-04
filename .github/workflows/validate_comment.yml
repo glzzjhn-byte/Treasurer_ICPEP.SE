@@ -16,7 +16,7 @@ jobs:
           script: |
             if (context.actor === 'github-actions[bot]') return;
             
-            // Only run this check on Issue #1
+            //Issue #1
             if (context.issue.number !== 1) return;
 
             const body = context.payload.comment.body;
