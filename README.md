@@ -1,4 +1,4 @@
-# 🏛️ ICPEP.SE Officers Directory
+# ICPEP.SE UST LEGAZPI CHAPTER Officers Directory
 
 Welcome! This repository holds the official list of officers in the `officers.json` file. 
 
@@ -38,7 +38,7 @@ Carefully add your name to the list following the existing format.
 
 ---
 
-## 🤖 What happens next?
+## What happens next?
 Once you submit your Pull Request, our automated GitHub Action will scan your edit. 
 * ✅ **If it passes:** A maintainer will approve and merge your name into the official list.
 * ❌ **If it fails:** The bot will block the merge. Scroll to the bottom of your Pull Request to see what error the bot found, fix your mistake, and it will re-test automatically!
