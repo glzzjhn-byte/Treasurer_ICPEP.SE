@@ -1,6 +1,6 @@
 name: Core Validation
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - 'officers.json'
 
@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           path: pr_branch
           
       - uses: actions/checkout@v4
@@ -25,7 +26,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Branch auth
+            // Branch Auth
             const fs = require('fs');
             
             const c1 = fs.readFileSync('./main_branch/officers.json', 'utf8');
