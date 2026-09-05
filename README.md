@@ -1,6 +1,6 @@
 # ICPEP.SE UST LEGAZPI CHAPTER Officers Directory
 
-> **IMPORTANT: Make sure that your GitHub account has your school email linked in its email settings.**
+> **IMPORTANT: Make sure that your GitHub account has your school email linked in its email settings. This will be verified to confirm if you are truly part of the chapter or need to have access to the site.**
 
 Welcome! This repository holds the official list of officers in the `officers.json` file. 
 
