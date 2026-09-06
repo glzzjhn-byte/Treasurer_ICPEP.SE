@@ -1,0 +1,71 @@
+name: Discussion Organizer
+
+on:
+  discussion:
+    types: [created, edited]
+
+jobs:
+  auto-label-discussions:
+    runs-on: ubuntu-latest
+    permissions:
+      discussions: write
+    steps:
+      - name: Auto-tag based on keywords
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const payload = context.payload;
+            const title = payload.discussion.title.toLowerCase();
+            const body = payload.discussion.body.toLowerCase();
+            const nodeId = payload.discussion.node_id;
+            
+            const content = title + ' ' + body;
+            
+            let labelName = '';
+            
+            if (content.includes('access') || content.includes('login') || content.includes('account') || content.includes('credential')) {
+              labelName = 'access';
+            } else if (content.includes('suggest') || content.includes('idea') || content.includes('feature')) {
+              labelName = 'suggestion';
+            } else if (content.includes('error') || content.includes('bug') || content.includes('down')) {
+              labelName = 'bug';
+            }
+            
+            if (labelName) {
+              const query = `
+                query($owner: String!, $repo: String!, $label: String!) {
+                  repository(owner: $owner, name: $repo) {
+                    label(name: $label) { id }
+                  }
+                }
+              `;
+              
+              try {
+                const result = await github.graphql(query, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  label: labelName
+                });
+                
+                const labelId = result.repository.label?.id;
+                
+                if (labelId) {
+                  const mutation = `
+                    mutation($labelableId: ID!, $labelIds: [ID!]!) {
+                      addLabelsToLabelable(input: {labelableId: $labelableId, labelIds: $labelIds}) {
+                        clientMutationId
+                      }
+                    }
+                  `;
+                  await github.graphql(mutation, {
+                    labelableId: nodeId,
+                    labelIds: [labelId]
+                  });
+                  console.log(`Successfully added the '${labelName}' label.`);
+                } else {
+                  console.log(`Label '${labelName}' not found. Make sure to create it in the repo settings first!`);
+                }
+              } catch (error) {
+                console.log("Failed to apply label:", error);
+              }
+            }
